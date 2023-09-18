@@ -75,7 +75,7 @@ systemctl daemon-reload
 systemctl enable "$SERVICE_NAME"
 
 # 启动服务
-systemctl start "$SERVICE_NAME"
+systemctl start "$SERVICE_NAME" --wait
 
 # 检查服务状态
 systemctl status "$SERVICE_NAME"
