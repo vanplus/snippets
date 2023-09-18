@@ -18,7 +18,7 @@ Description=$service_name
 After=network.target
 
 [Service]
-ExecStart=$command_to_run
+ExecStart="$command_to_run"
 Restart=$restart_option
 User=$(whoami)
 
