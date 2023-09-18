@@ -46,6 +46,8 @@ EOF
     rc-update add "$SERVICE_NAME" default
 
     echo "Init.d service '$SERVICE_NAME' created and enabled."
+    rc-service "$SERVICE_NAME" start
+    rc-status
     exit 0
 fi
 
