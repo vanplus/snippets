@@ -38,7 +38,7 @@ check_dpkg_support() {
     fi
 }
 
-if [ -n "$(check_dpkg_support)" ]; then
+if [ "$1" != "--manual" ] && [ -n "$(check_dpkg_support)" ]; then
     cleanup() {
         echo "cleanup, dpkg, pwd $(pwd)"
         rm "${file_name}"
