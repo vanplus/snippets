@@ -60,7 +60,7 @@ Description=$SERVICE_NAME
 After=network.target
 
 [Service]
-ExecStart="$COMMAND_TO_RUN"
+ExecStart=bash -c "$COMMAND_TO_RUN"
 Restart=$RESTART_OPTION
 User=$(whoami)
 
@@ -79,3 +79,5 @@ systemctl start "$SERVICE_NAME" --wait
 
 # 检查服务状态
 systemctl status "$SERVICE_NAME"
+
+journalctl -u "$SERVICE_NAME"
