@@ -143,7 +143,6 @@ After=network.target
 ExecStart=$COMMAND
 User=$(whoami)
 WorkingDirectory=$WORKDIR
-$RESTART_COMMAND
 $EXEC_RELOAD_COMMAND
 $STOP_COMMAND
 
