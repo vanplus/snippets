@@ -4,7 +4,7 @@
 DEFAULT_NAME="default-service"
 DEFAULT_COMMAND="echo 'Hello, World!'"
 DEFAULT_RESTART="no"
-DEFAULT_WORKDIR="."
+DEFAULT_WORKDIR="/"
 
 # 显示脚本用法
 display_help() {
@@ -16,6 +16,12 @@ display_help() {
     echo "  -d, --workdir     Working directory for the service. Default: $DEFAULT_WORKDIR"
     echo "  -h, --help        Display this help message."
 }
+
+# 如果没有提供任何参数，则显示帮助信息
+if [ "$#" -eq 0 ]; then
+    display_help
+    exit 0
+fi
 
 # 解析命令行选项
 while [[ $# -gt 0 ]]; do
