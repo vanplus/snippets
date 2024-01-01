@@ -140,7 +140,7 @@ Description=$NAME
 After=network.target
 
 [Service]
-ExecStart=bash -c '$COMMAND'
+ExecStart=$COMMAND
 User=$(whoami)
 WorkingDirectory=$WORKDIR
 $RESTART_COMMAND
