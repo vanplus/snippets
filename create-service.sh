@@ -1,30 +1,75 @@
 #!/bin/bash
 
-if [ $# -ne 3 ]; then
-    echo "Usage: $0 <service-name> <command-to-run> <restart-option>"
-    exit 1
-fi
+# 默认值
+DEFAULT_NAME="default-service"
+DEFAULT_COMMAND="echo 'Hello, World!'"
+DEFAULT_RESTART="no"
+DEFAULT_WORKDIR="."
 
-SERVICE_NAME="$1"
-COMMAND_TO_RUN="$2"
-RESTART_OPTION="$3"
+# 显示脚本用法
+display_help() {
+    echo "Usage: $0 [-n|--name <service-name>] [-c|--command <command-to-run>] [-r|--restart <restart-option>] [-d|--workdir <working-directory>] [-h|--help]"
+    echo "Options:"
+    echo "  -n, --name        Name of the service. Default: $DEFAULT_NAME"
+    echo "  -c, --command     Command to run as the service. Default: $DEFAULT_COMMAND"
+    echo "  -r, --restart     Restart option for the service. Default: $DEFAULT_RESTART"
+    echo "  -d, --workdir     Working directory for the service. Default: $DEFAULT_WORKDIR"
+    echo "  -h, --help        Display this help message."
+}
+
+# 解析命令行选项
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -n|--name)
+            NAME="$2"
+            shift 2
+            ;;
+        -c|--command)
+            COMMAND="$2"
+            shift 2
+            ;;
+        -r|--restart)
+            RESTART="$2"
+            shift 2
+            ;;
+        -d|--workdir)
+            WORKDIR="$2"
+            shift 2
+            ;;
+        -h|--help)
+            display_help
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $key"
+            display_help
+            exit 1
+            ;;
+    esac
+done
+
+# 设置默认值
+NAME="${NAME:-$DEFAULT_NAME}"
+COMMAND="${COMMAND:-$DEFAULT_COMMAND}"
+RESTART="${RESTART:-$DEFAULT_RESTART}"
+WORKDIR="${WORKDIR:-$DEFAULT_WORKDIR}"
 
 # 检查是否运行在 Alpine Linux 上
 if [ -f /etc/alpine-release ]; then
     # 创建 init.d 服务文件
-    SERVICE_FILE="/etc/init.d/$SERVICE_NAME"
-    
+    SERVICE_FILE="/etc/init.d/$NAME"
+
     cat <<EOF > "$SERVICE_FILE"
 #!/sbin/openrc-run
 
-name="$SERVICE_NAME"
-description="Custom Service: $SERVICE_NAME"
+name="$NAME"
+description="Custom Service: $NAME"
 
-command="$COMMAND_TO_RUN"
-
+command="$COMMAND"
 command_args=""
-
 pidfile="/var/run/\$RC_SVCNAME.pid"
+directory="$WORKDIR"
 
 start() {
     ebegin "Starting \$name"
@@ -43,26 +88,27 @@ EOF
     chmod +x "$SERVICE_FILE"
 
     # 添加服务到启动项
-    rc-update add "$SERVICE_NAME" default
+    rc-update add "$NAME" default
 
-    echo "Init.d service '$SERVICE_NAME' created and enabled."
-    rc-service "$SERVICE_NAME" start
+    echo "Init.d service '$NAME' created and enabled."
+    rc-service "$NAME" start
     rc-status
     exit 0
 fi
 
 # 创建 Systemd 服务单元文件
-service_file="/etc/systemd/system/$SERVICE_NAME.service"
+SERVICE_FILE="/etc/systemd/system/$NAME.service"
 
-cat <<EOF > "$service_file"
+cat <<EOF > "$SERVICE_FILE"
 [Unit]
-Description=$SERVICE_NAME
+Description=$NAME
 After=network.target
 
 [Service]
-ExecStart=bash -c "$COMMAND_TO_RUN"
-Restart=$RESTART_OPTION
+ExecStart=bash -c "$COMMAND"
+Restart=$RESTART
 User=$(whoami)
+WorkingDirectory=$WORKDIR
 
 [Install]
 WantedBy=multi-user.target
@@ -72,12 +118,12 @@ EOF
 systemctl daemon-reload
 
 # 启用服务开机自启动
-systemctl enable "$SERVICE_NAME"
+systemctl enable "$NAME"
 
 # 启动服务
-systemctl start "$SERVICE_NAME" --wait
+systemctl start "$NAME" --wait
 
 # 检查服务状态
-systemctl status "$SERVICE_NAME"
+systemctl status "$NAME"
 
-journalctl -u "$SERVICE_NAME"
+journalctl -u "$NAME"
