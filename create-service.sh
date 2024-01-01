@@ -3,15 +3,19 @@
 # 默认值
 DEFAULT_NAME="default-service"
 DEFAULT_COMMAND="echo 'Hello, World!'"
-DEFAULT_RESTART="no"
-DEFAULT_WORKDIR="/"
+DEFAULT_RELOAD_COMMAND="echo 'Reload command not specified'"
+DEFAULT_STOP_COMMAND="echo 'Stop command not specified'"
+DEFAULT_RESTART="always"
+DEFAULT_WORKDIR="."
 
 # 显示脚本用法
 display_help() {
-    echo "Usage: $0 [-n|--name <service-name>] [-c|--command <command-to-run>] [-r|--restart <restart-option>] [-d|--workdir <working-directory>] [-h|--help]"
+    echo "Usage: $0 [-n|--name <service-name>] [-c|--command <command-to-run>] [-rl|--reload-cmd <reload-command>] [-st|--stop-cmd <stop-command>] [-r|--restart <restart-option>] [-d|--workdir <working-directory>] [-h|--help]"
     echo "Options:"
     echo "  -n, --name        Name of the service. Default: $DEFAULT_NAME"
     echo "  -c, --command     Command to run as the service. Default: $DEFAULT_COMMAND"
+    echo "  -rl, --reload-cmd Command to execute on reload. Default: $DEFAULT_RELOAD_COMMAND"
+    echo "  -st, --stop-cmd   Command to execute on stop. Default: $DEFAULT_STOP_COMMAND"
     echo "  -r, --restart     Restart option for the service. Default: $DEFAULT_RESTART"
     echo "  -d, --workdir     Working directory for the service. Default: $DEFAULT_WORKDIR"
     echo "  -h, --help        Display this help message."
@@ -33,6 +37,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         -c|--command)
             COMMAND="$2"
+            shift 2
+            ;;
+        -rl|--reload-cmd)
+            RELOAD_COMMAND="$2"
+            shift 2
+            ;;
+        -st|--stop-cmd)
+            STOP_COMMAND="$2"
             shift 2
             ;;
         -r|--restart)
@@ -58,8 +70,13 @@ done
 # 设置默认值
 NAME="${NAME:-$DEFAULT_NAME}"
 COMMAND="${COMMAND:-$DEFAULT_COMMAND}"
+RELOAD_COMMAND="${RELOAD_COMMAND:-$DEFAULT_RELOAD_COMMAND}"
+STOP_COMMAND="${STOP_COMMAND:-$DEFAULT_STOP_COMMAND}"
 RESTART="${RESTART:-$DEFAULT_RESTART}"
 WORKDIR="${WORKDIR:-$DEFAULT_WORKDIR}"
+
+# 转换为绝对路径
+WORKDIR=$(realpath "$WORKDIR")
 
 # 检查是否运行在 Alpine Linux 上
 if [ -f /etc/alpine-release ]; then
@@ -112,6 +129,8 @@ After=network.target
 
 [Service]
 ExecStart=bash -c "$COMMAND"
+ExecReload=bash -c "$RELOAD_COMMAND"
+ExecStop=bash -c "$STOP_COMMAND"
 Restart=$RESTART
 User=$(whoami)
 WorkingDirectory=$WORKDIR
