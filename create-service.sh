@@ -145,10 +145,14 @@ User=$(whoami)
 WorkingDirectory=$WORKDIR
 $EXEC_RELOAD_COMMAND
 $STOP_COMMAND
+Restart=$RESTART
 
 [Install]
 WantedBy=multi-user.target
 EOF
+
+echo "systemctl status $NAME"
+echo "journalctl -u $NAME"
 
 # 重新加载 Systemd 配置
 systemctl daemon-reload
