@@ -3,22 +3,22 @@
 # 默认值
 DEFAULT_NAME="default-service"
 DEFAULT_COMMAND="echo 'Hello, World!'"
-DEFAULT_RELOAD_COMMAND="echo 'Reload command not specified'"
-DEFAULT_STOP_COMMAND="echo 'Stop command not specified'"
 DEFAULT_RESTART="always"
+DEFAULT_EXEC_RELOAD=""
+DEFAULT_STOP=""
 DEFAULT_WORKDIR="."
 
 # 显示脚本用法
 display_help() {
-    echo "Usage: $0 [-n|--name <service-name>] [-c|--command <command-to-run>] [-rl|--reload-cmd <reload-command>] [-st|--stop-cmd <stop-command>] [-r|--restart <restart-option>] [-d|--workdir <working-directory>] [-h|--help]"
+    echo "Usage: $0 [-n|--name <service-name>] [-c|--command <command-to-run>] [-r|--restart <restart-command>] [-x|--exec-reload <reload-command>] [-s|--stop <stop-command>] [-d|--workdir <working-directory>] [-h|--help]"
     echo "Options:"
-    echo "  -n, --name        Name of the service. Default: $DEFAULT_NAME"
-    echo "  -c, --command     Command to run as the service. Default: $DEFAULT_COMMAND"
-    echo "  -rl, --reload-cmd Command to execute on reload. Default: $DEFAULT_RELOAD_COMMAND"
-    echo "  -st, --stop-cmd   Command to execute on stop. Default: $DEFAULT_STOP_COMMAND"
-    echo "  -r, --restart     Restart option for the service. Default: $DEFAULT_RESTART"
-    echo "  -d, --workdir     Working directory for the service. Default: $DEFAULT_WORKDIR"
-    echo "  -h, --help        Display this help message."
+    echo "  -n, --name          Name of the service. Default: $DEFAULT_NAME"
+    echo "  -c, --command       Command to run as the service. Default: $DEFAULT_COMMAND"
+    echo "  -r, --restart       Restart command for the service. Default: $DEFAULT_RESTART"
+    echo "  -x, --exec-reload   Reload command for the service. Default: $DEFAULT_EXEC_RELOAD"
+    echo "  -s, --stop          Stop command for the service. Default: $DEFAULT_STOP"
+    echo "  -d, --workdir       Working directory for the service. Default: $DEFAULT_WORKDIR"
+    echo "  -h, --help          Display this help message."
 }
 
 # 如果没有提供任何参数，则显示帮助信息
@@ -39,16 +39,16 @@ while [[ $# -gt 0 ]]; do
             COMMAND="$2"
             shift 2
             ;;
-        -rl|--reload-cmd)
-            RELOAD_COMMAND="$2"
-            shift 2
-            ;;
-        -st|--stop-cmd)
-            STOP_COMMAND="$2"
-            shift 2
-            ;;
         -r|--restart)
             RESTART="$2"
+            shift 2
+            ;;
+        -x|--exec-reload)
+            EXEC_RELOAD="$2"
+            shift 2
+            ;;
+        -s|--stop)
+            STOP="$2"
             shift 2
             ;;
         -d|--workdir)
@@ -70,9 +70,9 @@ done
 # 设置默认值
 NAME="${NAME:-$DEFAULT_NAME}"
 COMMAND="${COMMAND:-$DEFAULT_COMMAND}"
-RELOAD_COMMAND="${RELOAD_COMMAND:-$DEFAULT_RELOAD_COMMAND}"
-STOP_COMMAND="${STOP_COMMAND:-$DEFAULT_STOP_COMMAND}"
 RESTART="${RESTART:-$DEFAULT_RESTART}"
+EXEC_RELOAD="${EXEC_RELOAD:-$DEFAULT_EXEC_RELOAD}"
+STOP="${STOP:-$DEFAULT_STOP}"
 WORKDIR="${WORKDIR:-$DEFAULT_WORKDIR}"
 
 # 转换为绝对路径
@@ -122,6 +122,24 @@ fi
 # 创建 Systemd 服务单元文件
 SERVICE_FILE="/etc/systemd/system/$NAME.service"
 
+# 添加 Restart 指令，如果提供了 restart 参数
+RESTART_COMMAND=""
+if [ -n "$RESTART" ]; then
+    RESTART_COMMAND="ExecStartPost=/bin/sleep $RESTART"
+fi
+
+# 添加 ExecReload 指令，如果提供了 exec-reload 参数
+EXEC_RELOAD_COMMAND=""
+if [ -n "$EXEC_RELOAD" ]; then
+    EXEC_RELOAD_COMMAND="ExecReload=$EXEC_RELOAD"
+fi
+
+# 添加 Stop 指令，如果提供了 stop 参数
+STOP_COMMAND=""
+if [ -n "$STOP" ]; then
+    STOP_COMMAND="ExecStop=$STOP"
+fi
+
 cat <<EOF > "$SERVICE_FILE"
 [Unit]
 Description=$NAME
@@ -129,11 +147,11 @@ After=network.target
 
 [Service]
 ExecStart=bash -c "$COMMAND"
-ExecReload=bash -c "$RELOAD_COMMAND"
-ExecStop=bash -c "$STOP_COMMAND"
-Restart=$RESTART
 User=$(whoami)
 WorkingDirectory=$WORKDIR
+$RESTART_COMMAND
+$EXEC_RELOAD_COMMAND
+$STOP_COMMAND
 
 [Install]
 WantedBy=multi-user.target
