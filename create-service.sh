@@ -122,12 +122,6 @@ fi
 # 创建 Systemd 服务单元文件
 SERVICE_FILE="/etc/systemd/system/$NAME.service"
 
-# 添加 Restart 指令，如果提供了 restart 参数
-RESTART_COMMAND=""
-if [ -n "$RESTART" ]; then
-    RESTART_COMMAND="ExecStartPost=/bin/sleep $RESTART"
-fi
-
 # 添加 ExecReload 指令，如果提供了 exec-reload 参数
 EXEC_RELOAD_COMMAND=""
 if [ -n "$EXEC_RELOAD" ]; then
