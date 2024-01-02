@@ -161,7 +161,7 @@ systemctl daemon-reload
 systemctl enable "$NAME"
 
 # 启动服务
-systemctl start "$NAME" --wait
+systemctl start "$NAME"
 
 # 检查服务状态
 systemctl status "$NAME"
