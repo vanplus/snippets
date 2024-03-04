@@ -60,10 +60,10 @@ dns_secret=$(read_required "请输入 Cloudflare token")
 # 读取 IPv4 配置
 ipv4_enable=$(read_with_default "IPv4 是否启用? (true/false)" "true")
 if [ "$ipv4_enable" = "true" ]; then
-    ipv4_gettype=$(read_with_default "IPv4 获取 IP 的方式(url/netinterface/cmd)" "url")
+    ipv4_gettype=$(read_with_default "IPv4 获取 IP 的方式(url/netInterface/cmd)" "url")
     if [ "$ipv4_gettype" = "cmd" ]; then
         ipv4_cmd=$(read_required "请输入 IPv4 获取 IP 的命令")
-    elif [ "$ipv4_gettype" = "netinterface" ]; then
+    elif [ "$ipv4_gettype" = "netInterface" ]; then
         echo "可用网络接口:"
         list_net_interfaces
         ipv4_netinterface=$(read_required "请输入网络接口名字")
@@ -75,10 +75,10 @@ fi
 # 读取 IPv6 配置
 ipv6_enable=$(read_with_default "IPv6 是否启用? (true/false)" "false")
 if [ "$ipv6_enable" = "true" ]; then
-    ipv6_gettype=$(read_with_default "IPv6 获取 IP 的方式(url/netinterface/cmd)" "url")
+    ipv6_gettype=$(read_with_default "IPv6 获取 IP 的方式(url/netInterface/cmd)" "url")
     if [ "$ipv6_gettype" = "cmd" ]; then
         ipv6_cmd=$(read_required "请输入 IPv6 获取IP的命令")
-    elif [ "$ipv6_gettype" = "netinterface" ]; then
+    elif [ "$ipv6_gettype" = "netInterface" ]; then
         echo "可用网络接口:"
         list_net_interfaces
         ipv6_netinterface=$(read_required "请选择一个网络接口")
@@ -94,7 +94,7 @@ dnsconf:
         enable: $ipv4_enable
         gettype: $ipv4_gettype
         url: https://api.ipify.org, https://ddns.oray.com/checkip, https://ip.3322.net, https://4.ipw.cn
-        netinterface: $ipv4_netinterface
+        netInterface: $ipv4_netinterface
         cmd: "$ipv4_cmd"
         domains:
 EOF
@@ -107,7 +107,7 @@ cat << EOF >> $CONFIG_FILE_NAME
         enable: $ipv6_enable
         gettype: $ipv6_gettype
         url: https://api64.ipify.org, https://speed.neu6.edu.cn/getIP.php, https://v6.ident.me, https://6.ipw.cn
-        netinterface: $ipv6_netinterface
+        netInterface: $ipv6_netinterface
         cmd: "$ipv6_cmd"
         domains:
 EOF
