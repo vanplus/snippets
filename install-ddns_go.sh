@@ -35,7 +35,7 @@ list_net_interfaces() {
 # 读取用户输入，支持默认值
 read_with_default() {
     local prompt=$1 default=$2
-    read -p "$prompt [$default]: " input
+    read -e -p "$prompt: " -i "${default}" input
     echo "${input:-$default}"
 }
 
@@ -44,7 +44,7 @@ read_required() {
     local input
     local prompt=$1
     while true; do
-        read -p "$prompt: " input
+        read -e -p "$prompt: " input
         if [ -z "$input" ]; then
             echo "这是必填项，请输入一个值。"
         else
@@ -69,8 +69,8 @@ if [ "$ipv4_enable" = "true" ]; then
         list_net_interfaces
         ipv4_netinterface=$(read_required "请选择一个网络接口")
     fi
-    echo "请输入 IPv4 的 domains，子域名和根域名之间用冒号分隔，比如 www:example.cn.eu.org（支持多条域名, 使用空格分隔）："
-    read -ra ipv4_domains
+    echo "请输入 IPv4 的 domains，「使用冒号」分隔子域名和根域名，比如 www:example.cn.eu.org（支持多条域名, 使用空格分隔）："
+    read -e -ra ipv4_domains
 fi
 
 # 读取 IPv6 配置
@@ -85,7 +85,7 @@ if [ "$ipv6_enable" = "true" ]; then
         ipv6_netinterface=$(read_required "请选择一个网络接口")
     fi
     echo "请输入 IPv6 的 domains, 子域名和根域名之间用冒号分隔，比如 www:example.cn.eu.org（支持多条域名, 使用空格分隔）："
-    read -ra ipv6_domains
+    read -e -ra ipv6_domains
 fi
 
 # 创建配置文件
