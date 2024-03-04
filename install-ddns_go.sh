@@ -66,7 +66,7 @@ if [ "$ipv4_enable" = "true" ]; then
     elif [ "$ipv4_gettype" = "netinterface" ]; then
         echo "可用网络接口:"
         list_net_interfaces
-        ipv4_netinterface=$(read_required "请选择一个网络接口")
+        ipv4_netinterface=$(read_required "请输入网络接口名字")
     fi
     echo "请输入 IPv4 的 domains，「使用冒号」分隔子域名和根域名，比如 www:example.cn.eu.org（支持多条域名, 使用空格分隔）："
     read -e -ra ipv4_domains
