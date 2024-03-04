@@ -1,4 +1,4 @@
-#!/usr/bin/env bash -e
+#!/bin/bash -e
 
 # 解析参数
 
@@ -55,7 +55,7 @@ read_required() {
 }
 
 # 读取 dns.secret
-dns_secret=$(read_required "请输入 cloudflare dns secret")
+dns_secret=$(read_required "请输入 cloudflare token（到 https://dash.cloudflare.com/profile/api-tokens 申请：Create Token -> Edit Zone DNS (Use template)）")
 
 # 读取 IPv4 配置
 ipv4_enable=$(read_with_default "IPv4 是否启用? (true/false)" "true")
