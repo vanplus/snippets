@@ -19,7 +19,6 @@ if [ "$separator_pos" -lt "$#" ]; then
     ddns_go_args="${ddns_go_args[@]}"
 fi
 
-echo "[INFO] ddns-go args: ${ddns_go_args}"
 INSTALL_DIR=~/ddns-go
 
 mkdir -p $INSTALL_DIR
