@@ -68,7 +68,7 @@ if [ "$ipv4_enable" = "true" ]; then
         list_net_interfaces
         ipv4_netinterface=$(read_required "请选择一个网络接口")
     fi
-    echo "请输入 IPv4 的 domains, 使用空格分隔："
+    echo "请输入 IPv4 的 domains，子域名和根域名之间用冒号分隔，比如 www:example.cn.eu.org（支持多条域名, 使用空格分隔）："
     read -ra ipv4_domains
 fi
 
@@ -83,7 +83,7 @@ if [ "$ipv6_enable" = "true" ]; then
         list_net_interfaces
         ipv6_netinterface=$(read_required "请选择一个网络接口")
     fi
-    echo "请输入 IPv6 的 domains, 使用空格分隔："
+    echo "请输入 IPv6 的 domains, 子域名和根域名之间用冒号分隔，比如 www:example.cn.eu.org（支持多条域名, 使用空格分隔）："
     read -ra ipv6_domains
 fi
 
