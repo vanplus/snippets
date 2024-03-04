@@ -174,6 +174,8 @@ curl -sL -o "$FILE_NAME" "$DOWNLOAD_URL"
 tar -xzf "${FILE_NAME}"
 cp ddns-go "$INSTALL_DIR"
 
+
+ddns_go_args=$(read_with_default "输入 ddns-go 安装命令参数" "${ddns_go_args}")
 echo "开始安装为服务"
 
 $INSTALL_DIR/ddns-go -s install -c $CONFIG_FILE_NAME $ddns_go_args
