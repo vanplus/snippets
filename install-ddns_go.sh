@@ -19,6 +19,25 @@ if [ "$separator_pos" -lt "$#" ]; then
     ddns_go_args="${ddns_go_args[@]}"
 fi
 
+# 如果 ddns-go 已经安装，则提示用户卸载
+
+SERVICE_NAME="ddns-go"
+
+# 检查 ddns-go 服务是否存在
+if systemctl --quiet is-active $SERVICE_NAME > /dev/null 2>&1; then
+    echo "ddns-go 服务已安装。请先卸载"
+    exit 1
+elif systemctl --quiet is-enabled $SERVICE_NAME > /dev/null 2>&1 ; then
+    echo "ddns-go 服务已安装。请先卸载"
+    exit 1
+fi
+
+# 检查 ddns-go 进程是否存在
+if pgrep -x "ddns-go" > /dev/null; then
+    echo "ddns-go 进程正在运行。请先停止"
+    exit 1
+fi
+
 INSTALL_DIR=~/ddns-go
 
 mkdir -p $INSTALL_DIR
@@ -59,6 +78,7 @@ dns_secret=$(read_required "请输入 Cloudflare token")
 
 # 读取 IPv4 配置
 ipv4_enable=$(read_with_default "IPv4 是否启用? (true/false)" "true")
+ipv4_gettype="url"
 if [ "$ipv4_enable" = "true" ]; then
     ipv4_gettype=$(read_with_default "IPv4 获取 IP 的方式(url/netInterface/cmd)" "url")
     if [ "$ipv4_gettype" = "cmd" ]; then
@@ -74,6 +94,7 @@ fi
 
 # 读取 IPv6 配置
 ipv6_enable=$(read_with_default "IPv6 是否启用? (true/false)" "false")
+ipv6_gettype="url"
 if [ "$ipv6_enable" = "true" ]; then
     ipv6_gettype=$(read_with_default "IPv6 获取 IP 的方式(url/netInterface/cmd)" "url")
     if [ "$ipv6_gettype" = "cmd" ]; then
@@ -87,6 +108,18 @@ if [ "$ipv6_enable" = "true" ]; then
     read -e -ra ipv6_domains
 fi
 
+# 生成随机密码
+generate_random_password() {
+    head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12
+}
+
+# 自动生成的用户名和密码
+username="admin"
+password=$(generate_random_password)
+
+username=$(read_with_default "输入用户名" "${username}")
+password=$(read_with_default "输入密码" "${password}")
+
 # 创建配置文件
 cat << EOF > $CONFIG_FILE_NAME
 dnsconf:
@@ -94,7 +127,7 @@ dnsconf:
         enable: $ipv4_enable
         gettype: $ipv4_gettype
         url: https://api.ipify.org, https://ddns.oray.com/checkip, https://ip.3322.net, https://4.ipw.cn
-        netInterface: $ipv4_netinterface
+        netinterface: $ipv4_netinterface
         cmd: "$ipv4_cmd"
         domains:
 EOF
@@ -107,7 +140,7 @@ cat << EOF >> $CONFIG_FILE_NAME
         enable: $ipv6_enable
         gettype: $ipv6_gettype
         url: https://api64.ipify.org, https://speed.neu6.edu.cn/getIP.php, https://v6.ident.me, https://6.ipw.cn
-        netInterface: $ipv6_netinterface
+        netinterface: $ipv6_netinterface
         cmd: "$ipv6_cmd"
         domains:
 EOF
@@ -122,8 +155,8 @@ cat << EOF >> $CONFIG_FILE_NAME
         secret: $dns_secret
       ttl: ""
 user:
-    username: ""
-    password: ""
+    username: "${username}"
+    password: "${password}"
 webhook:
     webhookurl: ""
     webhookrequestbody: ""
@@ -155,7 +188,6 @@ else
 fi
 
 cleanup() {
-    echo "cleanup, pwd $(pwd)"
     rm -rf "$TMP_DIR"
 }
 
@@ -173,10 +205,26 @@ curl -sL -o "$FILE_NAME" "$DOWNLOAD_URL"
 tar -xzf "${FILE_NAME}"
 cp ddns-go "$INSTALL_DIR"
 
-
 ddns_go_args=$(read_with_default "输入 ddns-go 安装命令参数" "${ddns_go_args}")
+# 如果启用 -noweb 则再次询问是否启用 web ui
+if [[ "$ddns_go_args" == *"-noweb"* ]]; then
+    # 询问用户是否启用 Web UI
+    enable_web_ui=$(read_with_default "是否启用 Web UI? (y/n)" "y")
+    if [[ "$enable_web_ui" == "y" ]]; then
+        # 如果启用，则去掉 -noweb 参数
+        ddns_go_args="${ddns_go_args/-noweb/}"
+    fi
+fi
+
 echo "开始安装为服务"
-
 $INSTALL_DIR/ddns-go -s install -c $CONFIG_FILE_NAME $ddns_go_args
+systemctl status $SERVICE_NAME &
 
-systemctl status ddns-go
+sleep 0.2
+# ANSI 转义序列设置为绿色和重置
+green="\033[32m"
+reset="\033[0m"
+
+echo -e "\n"
+echo -e "用户名: ${green}${username}${reset}"
+echo -e "密码: ${green}${password}${reset}"
