@@ -2,10 +2,34 @@
 
 # 解析参数
 
+# 显示帮助信息
+show_usage() {
+    echo "用法: $0 [选项]..."
+    echo "选项:"
+    echo "  --root-domain <domain>    设置根域名"
+    echo "  --ip-gettype <type>       设置 IP 获取方式"
+    echo "  --cf-token <token>        设置 Cloudflare Token"
+    echo "  -- <cmd>                  传递给 ddns-go -s install 的运行参数"
+    echo "  --help                    显示此帮助信息"
+}
+
+# 检查并设置参数
+set_parameter() {
+    local param_name=$1
+    local param_value=$2
+    if [ -z "$param_value" ]; then
+        echo "错误：$param_name 需要一个非空的值。"
+        show_usage
+        exit 1
+    fi
+    eval "$param_name='$param_value'"
+}
+
 # 默认参数
-ddns_go_args="-f 10 -cacheTimes 180 -noweb"
 root_domain=""
 ip_gettype="url"
+cf_token=""
+ddns_go_args="-f 10 -cacheTimes 180 -noweb"
 
 # 查找 '--' 参数的位置
 separator_pos=0
@@ -27,12 +51,20 @@ fi
 while [ $# -gt 0 ]; do
     case "$1" in
         --root-domain)
-            root_domain="$2"
+            set_parameter root_domain "$2"
             shift 2
             ;;
         --ip-gettype)
-            ip_gettype="$2"
+            set_parameter ip_gettype "$2"
             shift 2
+            ;;
+        --cf-token)
+            set_parameter cf_token "$2"
+            shift 2
+            ;;
+        --help)
+            show_usage
+            exit 1
             ;;
         *)
             shift
@@ -41,7 +73,6 @@ while [ $# -gt 0 ]; do
 done
 
 # 如果 ddns-go 已经安装，则提示用户卸载
-
 SERVICE_NAME="ddns-go"
 
 # 检查 ddns-go 服务是否存在
@@ -78,13 +109,13 @@ get_interfaces() {
     if [ "$1" == "-4" ]; then
         # 输出每个接口的名称和 IPv4 地址
         for interface in $interfaces; do
-            ipv4=$(ip -o -4 addr show dev $interface | awk 'BEGIN { ORS=", "; } {print $4}' | sed 's/, $/\n/')
+            ipv4=$(ip -o -4 addr show dev $interface | awk '{print $4}')
             interface_info+=("$interface ($ipv4)")
         done
     elif [ "$1" == "-6" ]; then
         # 输出每个接口的名称和 IPv6 地址
         for interface in $interfaces; do
-            ipv6=$(ip -o -6 addr show dev $interface | awk 'BEGIN { ORS=", "; } {print $4}' | sed 's/, $/\n/')
+            ipv6=$(ip -o -6 addr show dev $interface | awk '{print $4}')
             interface_info+=("$interface ($ipv6)")
         done
     else
@@ -138,7 +169,7 @@ fi
 
 # 读取 dns.secret
 echo "Cloudflare token 可访问 https://dash.cloudflare.com/profile/api-tokens 申请，Create Token -> Edit Zone DNS (Use template)"
-dns_secret=$(read_required "请输入 Cloudflare token")
+dns_secret=$(read_with_default "请输入 Cloudflare token" $cf_token)
 
 # 读取 IPv4 配置
 ipv4_enable=$(read_with_default "IPv4 是否启用? (true/false)" "true")
