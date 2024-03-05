@@ -4,7 +4,7 @@
 
 # 显示帮助信息
 show_usage() {
-    echo "用法: $0 [选项]..."
+    echo "用法: install-ddns_go.sh [选项]..."
     echo "选项:"
     echo "  --root-domain <domain>    设置根域名"
     echo "  --ip-gettype <type>       设置 IP 获取方式"
