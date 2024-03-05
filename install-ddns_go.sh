@@ -109,13 +109,13 @@ get_interfaces() {
     if [ "$1" == "-4" ]; then
         # 输出每个接口的名称和 IPv4 地址
         for interface in $interfaces; do
-            ipv4=$(ip -o -4 addr show dev $interface | awk '{print $4}')
+            ipv4=$(ip -o -4 addr show dev $interface | awk 'BEGIN { ORS=", "; } {print $4}' | sed 's/, $/\n/')
             interface_info+=("$interface ($ipv4)")
         done
     elif [ "$1" == "-6" ]; then
         # 输出每个接口的名称和 IPv6 地址
         for interface in $interfaces; do
-            ipv6=$(ip -o -6 addr show dev $interface | awk '{print $4}')
+            ipv6=$(ip -o -6 addr show dev $interface | awk 'BEGIN { ORS=", "; } {print $4}' | sed 's/, $/\n/')
             interface_info+=("$interface ($ipv6)")
         done
     else
