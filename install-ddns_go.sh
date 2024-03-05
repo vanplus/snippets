@@ -106,13 +106,13 @@ get_interfaces() {
     interface_info=()
 
     # 根据参数进行不同的输出
-    if [ "$1" == "-4" ]; then
+    if [ "$1" == "4" ]; then
         # 输出每个接口的名称和 IPv4 地址
         for interface in $interfaces; do
             ipv4=$(ip -o -4 addr show dev $interface | awk 'BEGIN { ORS=", "; } {print $4}' | sed 's/, $/\n/')
             interface_info+=("$interface ($ipv4)")
         done
-    elif [ "$1" == "-6" ]; then
+    elif [ "$1" == "6" ]; then
         # 输出每个接口的名称和 IPv6 地址
         for interface in $interfaces; do
             ipv6=$(ip -o -6 addr show dev $interface | awk 'BEGIN { ORS=", "; } {print $4}' | sed 's/, $/\n/')
@@ -171,47 +171,57 @@ fi
 echo "Cloudflare token 可访问 https://dash.cloudflare.com/profile/api-tokens 申请，Create Token -> Edit Zone DNS (Use template)"
 dns_secret=$(read_with_default "请输入 Cloudflare token" $cf_token)
 
-# 读取 IPv4 配置
-ipv4_enable=$(read_with_default "IPv4 是否启用? (true/false)" "true")
-ipv4_gettype=$ip_gettype
-if [ "$ipv4_enable" = "true" ]; then
-    ipv4_gettype=$(read_with_default "IPv4 获取 IP 的方式 (url/netInterface/cmd)" "$ipv4_gettype")
-    if [ "$ipv4_gettype" = "cmd" ]; then
-        ipv4_cmd=$(read_required "请输入 IPv4 获取 IP 的命令")
-    elif [ "$ipv4_gettype" = "netInterface" ]; then
-        readarray -t interface_array < <(get_interfaces -4)
-        echo "可用网络接口："
-        for item in "${interface_array[@]}"; do
-            echo "$item"
-        done
+configure_ip() {
+    local ip_type=$1
+    local suggest_domian=$2
+    local enable_var="ipv${ip_type}_enable"
+    local gettype_var="ipv${ip_type}_gettype"
+    local cmd_var="ipv${ip_type}_cmd"
+    local netinterface_var="ipv${ip_type}_netinterface"
+    local domains_var="ipv${ip_type}_domains"
 
-        ipv4_netinterface=$(echo "${interface_array[0]}" | awk '{print $1}')
-        ipv4_netinterface=$(read_with_default "请输入网络接口名字" "$ipv4_netinterface")
+    # 读取接口配置
+    local interface_array=()
+    readarray -t interface_array < <(get_interfaces $ip_type)
+
+    local enable=$([ ${#interface_array[@]} -gt 0 ] && echo "true" || echo "false")
+    enable=$(read_with_default "IPv${ip_type} 是否启用? (true/false)" $enable)
+    local gettype=$ip_gettype
+
+    if [ "$enable" = "true" ]; then
+        gettype=$(read_with_default "IPv${ip_type} 获取 IP 的方式 (url/netInterface/cmd)" "$gettype")
+        local cmd=""
+        local netinterface=""
+        local domains=""
+
+        if [ "$gettype" = "cmd" ]; then
+            cmd=$(read_required "请输入 IPv${ip_type} 获取 IP 的命令")
+        elif [ "$gettype" = "netInterface" ]; then
+            echo "可用网络接口："
+            for item in "${interface_array[@]}"; do
+                echo "$item"
+            done
+
+            netinterface=$(echo "${interface_array[0]}" | awk '{print $1}')
+            netinterface=$(read_with_default "请输入网络接口名字" "$netinterface")
+        fi
+
+        echo "请输入 IPv${ip_type} 的 domains, 子域名和根域名之间用冒号分隔，比如 www:example.cn.eu.org（支持多条域名, 使用空格分隔）："
+        read -e -ra domains -i "${suggest_domian}"
+        
+        eval $enable_var=\$enable
+        eval $gettype_var=\$gettype
+        eval $cmd_var=\$cmd
+        eval $netinterface_var=\$netinterface
+        eval $domains_var='("${domains[@]}")'
     fi
-    echo "请输入 IPv4 的 domains，「使用冒号」分隔子域名和根域名，比如 www:example.cn.eu.org（支持多条域名, 使用空格分隔）："
-    read -e -ra ipv4_domains -i "$ipv4_domain"
-fi
+}
 
-# 读取 IPv6 配置
-ipv6_enable=$(read_with_default "IPv6 是否启用? (true/false)" "false")
-ipv6_gettype=$ip_gettype
-if [ "$ipv6_enable" = "true" ]; then
-    ipv6_gettype=$(read_with_default "IPv6 获取 IP 的方式 (url/netInterface/cmd)" "$ipv6_gettype")
-    if [ "$ipv6_gettype" = "cmd" ]; then
-        ipv6_cmd=$(read_required "请输入 IPv6 获取IP的命令")
-    elif [ "$ipv6_gettype" = "netInterface" ]; then
-        readarray -t interface_array < <(get_interfaces -6)
-        echo "可用网络接口："
-        for item in "${interface_array[@]}"; do
-            echo "$item"
-        done
+# 使用函数进行 IPv4 配置
+configure_ip 4 $ipv4_domain
 
-        ipv6_netinterface=$(echo "${interface_array[0]}" | awk '{print $1}')
-        ipv6_netinterface=$(read_with_default "请输入网络接口名字" "$ipv6_netinterface")
-    fi
-    echo "请输入 IPv6 的 domains, 子域名和根域名之间用冒号分隔，比如 www:example.cn.eu.org（支持多条域名, 使用空格分隔）："
-    read -e -ra ipv6_domains -i "$ipv6_domain"
-fi
+# 使用函数进行 IPv6 配置
+configure_ip 6 $ipv6_domain
 
 # 自动生成的用户名和密码
 username="admin"
