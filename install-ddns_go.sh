@@ -9,7 +9,7 @@ show_usage() {
     echo "  --root-domain <domain>    设置根域名"
     echo "  --ip-gettype <type>       设置 IP 获取方式"
     echo "  --cf-token <token>        设置 Cloudflare Token"
-    echo "  -- <cmd>                  传递给 ddns-go -s install 的运行参数"
+    echo "  -- <cmd>                  传递给 ddns-go -s install 安装时的参数"
     echo "  --help                    显示此帮助信息"
 }
 
