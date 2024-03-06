@@ -310,7 +310,7 @@ cd "$TMP_DIR"
 
 FILE_NAME="ddns-go_latest_linux_x86_64.tar.gz"
 
-echo ”开始下载 ${FILE_NAME}“
+echo "开始下载 ${FILE_NAME}"
 curl -sL -o "$FILE_NAME" "$DOWNLOAD_URL"
 tar -xzf "${FILE_NAME}"
 cp ddns-go "$INSTALL_DIR"
