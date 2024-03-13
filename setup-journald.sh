@@ -52,4 +52,9 @@ update_config "RuntimeKeepFree" "$RUNTIME_KEEP_FREE" "$CONFIG_FILE"
 # 重启 systemd-journald 服务
 systemctl restart systemd-journald
 
-echo "journald 配置已更新并应用。"
+green="\033[32m"
+reset="\033[0m"
+
+echo -e "\n"
+echo -e "${green}journald 配置已更新并重启应用${reset}"
+
