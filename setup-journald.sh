@@ -39,6 +39,8 @@ update_config() {
         # 如果配置项不存在，则在文件末尾添加
         echo "${key}=${value}" >> "$file"
     fi
+
+    echo "${key}=${value}"
 }
 
 # 更新配置项
