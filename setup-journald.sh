@@ -49,6 +49,9 @@ update_config "RuntimeMaxUse" "$RUNTIME_MAX_USE" "$CONFIG_FILE"
 update_config "SystemKeepFree" "$SYSTEM_KEEP_FREE" "$CONFIG_FILE"
 update_config "RuntimeKeepFree" "$RUNTIME_KEEP_FREE" "$CONFIG_FILE"
 
+echo -e ""
+du -h --max-depth=1 /var/log
+
 # 重启 systemd-journald 服务
 systemctl restart systemd-journald
 
@@ -58,3 +61,5 @@ reset="\033[0m"
 echo -e ""
 echo -e "${green}journald 配置已更新并重启应用${reset}"
 
+echo -e ""
+du -h --max-depth=1 /var/log
