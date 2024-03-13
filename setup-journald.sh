@@ -55,6 +55,6 @@ systemctl restart systemd-journald
 green="\033[32m"
 reset="\033[0m"
 
-echo -e "\n"
+echo -e ""
 echo -e "${green}journald 配置已更新并重启应用${reset}"
 
