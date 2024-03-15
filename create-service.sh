@@ -163,7 +163,9 @@ systemctl enable "$NAME"
 # 启动服务
 systemctl start "$NAME"
 
+sleep 2
 # 检查服务状态
-systemctl status "$NAME"
+systemctl status "$NAME" &
 
-journalctl -u "$NAME"
+sleep 0.5
+journalctl -fu "$NAME"
