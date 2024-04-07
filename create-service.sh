@@ -146,6 +146,7 @@ WorkingDirectory=$WORKDIR
 $EXEC_RELOAD_COMMAND
 $STOP_COMMAND
 Restart=$RESTART
+TimeoutStopSec=5s
 
 [Install]
 WantedBy=multi-user.target
