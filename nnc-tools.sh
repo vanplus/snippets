@@ -205,21 +205,21 @@ check_bbr() {
         return 1
     fi
 
-    # 检查系统支持的 TCP 拥塞控制算法
-    AVAILABLE_CC=$(sysctl net.ipv4.tcp_available_congestion_control | awk -F' = ' '{print $2}')
+    # # 检查系统支持的 TCP 拥塞控制算法
+    # AVAILABLE_CC=$(sysctl net.ipv4.tcp_available_congestion_control | awk -F' = ' '{print $2}')
 
-    if ! echo "$AVAILABLE_CC" | grep -q "bbr"; then
-        echo "BBR is not supported in your kernel."
-        return 1
-    fi
+    # if ! echo "$AVAILABLE_CC" | grep -q "bbr"; then
+    #     echo "BBR is not supported in your kernel."
+    #     return 1
+    # fi
 
-    # 检查当前的 TCP 拥塞控制算法
-    CURRENT_CC=$(sysctl net.ipv4.tcp_congestion_control | awk -F' = ' '{print $2}')
+    # # 检查当前的 TCP 拥塞控制算法
+    # CURRENT_CC=$(sysctl net.ipv4.tcp_congestion_control | awk -F' = ' '{print $2}')
 
-    if [ "$CURRENT_CC" != "bbr" ]; then
-        echo "BBR is supported but not enabled. Current congestion control: $CURRENT_CC"
-        return 2
-    fi
+    # if [ "$CURRENT_CC" != "bbr" ]; then
+    #     echo "BBR is supported but not enabled. Current congestion control: $CURRENT_CC"
+    #     return 2
+    # fi
 
     # 检查是否加载了 BBR 模块
     if ! lsmod | grep -q "tcp_bbr"; then
@@ -230,7 +230,6 @@ check_bbr() {
     echo "BBR is correctly configured and enabled."
     return 0
 }
-
 
 Update_Shell(){
   wget -N "http://sh.nekoneko.cloud/tools.sh" -O tools.sh && chmod +x tools.sh && ./tools.sh
