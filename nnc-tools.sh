@@ -180,12 +180,57 @@ EOF
 
 # Function to install BBR and optimize TCP
 bbr() {
-    if uname -r | grep -q "^5."; then
-        echo "已经是 5.x 内核，不需要更新"
-    else
+    # 调用 check_bbr 并检查返回值
+    check_bbr
+    BBR_STATUS=$?
+
+    if [ $BBR_STATUS -eq 0 ]; then
+        echo "BBR is enabled and functioning correctly."
+    elif [ $BBR_STATUS -eq 2 ]; then
+        echo "BBR is supported but not enabled. Consider enabling it."
+    elif [ $BBR_STATUS -eq 1 ]; then
+        echo "BBR is not properly configured or not supported, try to install bbr."
         wget -N "http://sh.nekoneko.cloud/bbr/bbr.sh" -O bbr.sh && bash bbr.sh
     fi
 }
+
+check_bbr() {
+    # 检查内核版本
+    KERNEL_VERSION=$(uname -r)
+    KERNEL_MAJOR=$(echo $KERNEL_VERSION | cut -d'.' -f1)
+    KERNEL_MINOR=$(echo $KERNEL_VERSION | cut -d'.' -f2)
+
+    if [ "$KERNEL_MAJOR" -lt 4 ] || { [ "$KERNEL_MAJOR" -eq 4 ] && [ "$KERNEL_MINOR" -lt 9 ]; }; then
+        echo "BBR requires kernel version 4.9 or higher. Current version: $KERNEL_VERSION"
+        return 1
+    fi
+
+    # 检查系统支持的 TCP 拥塞控制算法
+    AVAILABLE_CC=$(sysctl net.ipv4.tcp_available_congestion_control | awk -F' = ' '{print $2}')
+
+    if ! echo "$AVAILABLE_CC" | grep -q "bbr"; then
+        echo "BBR is not supported in your kernel."
+        return 1
+    fi
+
+    # 检查当前的 TCP 拥塞控制算法
+    CURRENT_CC=$(sysctl net.ipv4.tcp_congestion_control | awk -F' = ' '{print $2}')
+
+    if [ "$CURRENT_CC" != "bbr" ]; then
+        echo "BBR is supported but not enabled. Current congestion control: $CURRENT_CC"
+        return 2
+    fi
+
+    # 检查是否加载了 BBR 模块
+    if ! lsmod | grep -q "tcp_bbr"; then
+        echo "BBR module is not loaded."
+        return 1
+    fi
+
+    echo "BBR is correctly configured and enabled."
+    return 0
+}
+
 
 Update_Shell(){
   wget -N "http://sh.nekoneko.cloud/tools.sh" -O tools.sh && chmod +x tools.sh && ./tools.sh
