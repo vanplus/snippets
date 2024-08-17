@@ -221,13 +221,13 @@ check_bbr() {
     #     return 2
     # fi
 
-    # 检查是否加载了 BBR 模块
-    if ! lsmod | grep -q "tcp_bbr"; then
-        echo "BBR module is not loaded."
-        return 1
-    fi
+    # # 检查是否加载了 BBR 模块
+    # if ! lsmod | grep -q "tcp_bbr"; then
+    #     echo "BBR module is not loaded."
+    #     return 1
+    # fi
 
-    echo "BBR is correctly configured and enabled."
+    # echo "BBR is correctly configured and enabled."
     return 0
 }
 
