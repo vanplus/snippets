@@ -47,9 +47,9 @@ if [ "$1" != "--manual" ] && [ -n "$(check_dpkg_support)" ]; then
     trap 'cleanup' EXIT
 
     if [[ "$LIBC" == "musl" ]]; then
-        file_name="bottom-musl_${tag_name}_amd64.deb"
+        file_name="bottom-musl_${tag_name}-1_amd64.deb"
     else
-        file_name="bottom_${tag_name}_amd64.deb"
+        file_name="bottom_${tag_name}-1_amd64.deb"
     fi
 
     echo "开始下载最新版本的 ${file_name} 文件，版本号：$tag_name"
