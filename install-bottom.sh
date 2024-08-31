@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash -e
 
 # GitHub 仓库所有者和仓库名称
 OWNER="ClementTsang"
@@ -6,8 +6,14 @@ REPO="bottom"
 MANUAL_INSTALL_DIR="/usr/local/bin/"
 
 # GitHub Release 页面 URL
-RELEASES_URL="https://api.github.com/repos/${OWNER}/${REPO}/releases/latest"
-FILE_URL_PREFIX="https://github.com/${OWNER}/${REPO}/releases/latest/download/"
+RELEASES_URL="https://github.com/$OWNER/$REPO/releases/latest"
+FILE_URL_PREFIX="https://github.com/$OWNER/$REPO/releases/latest/download/"
+
+# 确定最新的 release 页面
+latest_release_url=$(curl -sI $RELEASES_URL | grep -i location | awk '{print $2}' | tr -d '\r')
+
+# 提取版本号
+tag_name=$(echo $latest_release_url | grep -oP "tag/\K(v.*)")
 
 check_libc() {
     libc=$(ldd /bin/ls | grep 'musl')
@@ -21,14 +27,8 @@ check_libc() {
 LIBC="$(check_libc)"
 echo $LIBC
 
-# 获取最新 Release 的信息
-release_info=$(curl -sSL "${RELEASES_URL}")
-
-# 提取最新 Release 的 tag_name（版本号）
-tag_name=$(echo "$release_info" | grep -o '"tag_name": "[^"]*' | sed 's/"tag_name": "//')
-
 if [ -z "${tag_name}" ]; then
-  echo "获取到的 tag_name 为空，无法下载，release_info: ${release_info}"
+  echo "获取到的 tag_name 为空，无法下载}"
   exit 1
 fi
 
