@@ -13,7 +13,7 @@ FILE_URL_PREFIX="https://github.com/$OWNER/$REPO/releases/latest/download/"
 latest_release_url=$(curl -sI $RELEASES_URL | grep -i location | awk '{print $2}' | tr -d '\r')
 
 # 提取版本号
-tag_name=$(echo $latest_release_url | grep -oP "tag/\K(v.*)")
+tag_name=$(echo $latest_release_url | grep -oP "tag/\K(.*)")
 
 check_libc() {
     libc=$(ldd /bin/ls | grep 'musl')
@@ -28,7 +28,7 @@ LIBC="$(check_libc)"
 echo $LIBC
 
 if [ -z "${tag_name}" ]; then
-  echo "获取到的 tag_name 为空，无法下载}"
+  echo "获取到的 tag_name 为空，无法下载"
   exit 1
 fi
 
