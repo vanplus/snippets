@@ -29,7 +29,7 @@ set_parameter() {
 root_domain=""
 ip_gettype="url"
 cf_token=""
-ddns_go_args="-f 10 -cacheTimes 180 -noweb"
+ddns_go_args="-f 30 -cacheTimes 180 -noweb"
 
 # 查找 '--' 参数的位置
 separator_pos=0
