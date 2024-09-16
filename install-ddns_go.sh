@@ -283,19 +283,18 @@ echo "配置文件 ${CONFIG_FILE_NAME} 已生成"
 OWNER="jeessy2"
 REPO="ddns-go"
 
-# GitHub Release 页面 URL
-RELEASES_URL="https://api.github.com/repos/${OWNER}/${REPO}/releases/latest"
+RELEASES_URL="https://github.com/$OWNER/$REPO/releases/latest"
+FILE_URL_PREFIX="https://github.com/$OWNER/$REPO/releases/latest/download/"
 
 echo "解析 ddns-go 安装包下载地址"
 
-response=$(curl -s ${RELEASES_URL})
+latest_release_url=$(curl -sI $RELEASES_URL | grep -i location | awk '{print $2}' | tr -d '\r')
 
-if ! DOWNLOAD_URL=$(echo "$response" | python3 -c "import sys, json; print(next(item['browser_download_url'] for item in json.load(sys.stdin)['assets'] if 'ddns-go_' in item['name'] and 'linux_x86_64.tar.gz' in item['name']))"); then
-    echo "解析失败：$response"
-    exit 1
-else
-    echo "下载地址解析成功：$DOWNLOAD_URL"
-fi
+# 提取版本号
+tag_name=$(echo $latest_release_url | grep -oP "tag/v\K(.*)")
+
+file_name="ddns-go_${tag_name}_linux_x86_64.tar.gz "
+DOWNLOAD_URL="${FILE_URL_PREFIX}${file_name}"
 
 cleanup() {
     rm -rf "$TMP_DIR"
