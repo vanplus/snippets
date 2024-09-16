@@ -1,21 +1,5 @@
 #!/usr/bin/env bash
 
-while [ $# -gt 0 ]; do
-    case "$1" in
-        --mem_max)
-            mem_max="$2"
-            shift 2
-            ;;
-        --mem)
-            mem="$2"
-            shift 2
-            ;;
-        *)
-            shift
-            ;;
-    esac
-done
-
 # Color definitions for output
 Green_font_prefix="\033[32m"
 Red_font_prefix="\033[31m"
@@ -64,6 +48,25 @@ tcp_tune() {
     for key in "${keys[@]}"; do
         sed -i "/$key/d" "$conf_file"
     done
+
+mem_max="33554432"
+mem="4096 87380 33554432"
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --mem_max)
+            mem_max="$2"
+            shift 2
+            ;;
+        --mem)
+            mem="$2"
+            shift 2
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
 
     cat >> "$conf_file" << EOF
 net.ipv4.tcp_no_metrics_save=1
