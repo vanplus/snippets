@@ -1,5 +1,21 @@
 #!/usr/bin/env bash
 
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --mem_max)
+            mem_max="$2"
+            shift 2
+            ;;
+        --mem)
+            mem="$2"
+            shift 2
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
 # Color definitions for output
 Green_font_prefix="\033[32m"
 Red_font_prefix="\033[31m"
@@ -60,10 +76,10 @@ net.ipv4.tcp_fack=1
 net.ipv4.tcp_window_scaling=1
 net.ipv4.tcp_adv_win_scale=1
 net.ipv4.tcp_moderate_rcvbuf=1
-net.core.rmem_max=67108848 
-net.core.wmem_max=67108848
-net.ipv4.tcp_rmem=10240000 16777216 536870912
-net.ipv4.tcp_wmem=10240000 16777216 536870912
+net.core.rmem_max=$mem_max 
+net.core.wmem_max=$mem_max 
+net.ipv4.tcp_rmem=$mem
+net.ipv4.tcp_wmem=$mem
 net.ipv4.udp_rmem_min=8192
 net.ipv4.udp_wmem_min=8192
 net.core.default_qdisc=fq
