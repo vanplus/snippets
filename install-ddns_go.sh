@@ -288,7 +288,7 @@ FILE_URL_PREFIX="https://github.com/$OWNER/$REPO/releases/latest/download/"
 
 echo "解析 ddns-go 安装包下载地址"
 
-latest_release_url=$(curl -sI $RELEASES_URL | grep -i location | awk '{print $2}' | tr -d '\r')
+latest_release_url=$(curl --http1.1 -sI $RELEASES_URL | grep -i location | awk '{print $2}' | tr -d '\r')
 
 # 提取版本号
 tag_name=$(echo $latest_release_url | grep -oP "tag/v\K(.*)")
@@ -310,7 +310,7 @@ cd "$TMP_DIR"
 FILE_NAME="ddns-go_latest_linux_x86_64.tar.gz"
 
 echo "开始下载 ${FILE_NAME}"
-curl -sL --http1.1 -o "$FILE_NAME" "$DOWNLOAD_URL"
+curl --http1.1 -sL -o "$FILE_NAME" "$DOWNLOAD_URL"
 tar -xzf "${FILE_NAME}"
 cp ddns-go "$INSTALL_DIR"
 
