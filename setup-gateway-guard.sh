@@ -22,16 +22,16 @@ echo "检测到出口接口: $out_iface (IPv4) 和 $out_iface6 (IPv6)"
 # 定义要插入的 IPv4 配置
 ipv4_config=$(cat <<'EOF'
     # 获取 LAN4 地址并添加 IPv4 路由规则
-    post-up LAN4=$(ip route get 192.168.193.10 2>/dev/null | awk '{for (i=0; i<NF; i++) if ($i=="src") {print $(i+1)}}') && ip -4 rule add from $LAN4 lookup main
-    pre-down LAN4=$(ip route get 192.168.193.10 2>/dev/null | awk '{for (i=0; i<NF; i++) if ($i=="src") {print $(i+1)}}') && ip -4 rule del from $LAN4 lookup main
+    post-up LAN4=$(ip route get 192.168.193.10 2>/dev/null | awk '{for (i=0; i<NF; i++) if ($i=="src") {print $(i+1)}}') && ip -4 rule add from $LAN4 lookup main pref 1
+    pre-down LAN4=$(ip route get 192.168.193.10 2>/dev/null | awk '{for (i=0; i<NF; i++) if ($i=="src") {print $(i+1)}}') && ip -4 rule del from $LAN4 lookup main pref 1
 EOF
 )
 
 # 定义要插入的 IPv6 配置
 ipv6_config=$(cat <<'EOF'
     # 获取 LAN6 地址并添加 IPv6 路由规则
-    post-up LAN6=$(ip -6 route get 2606:4700:d0::a29f:c001 2>/dev/null | awk '{for (i=0; i<NF; i++) if ($i=="src") {print $(i+1)}}') && ip -6 rule add from $LAN6 lookup main
-    pre-down LAN6=$(ip -6 route get 2606:4700:d0::a29f:c001 2>/dev/null | awk '{for (i=0; i<NF; i++) if ($i=="src") {print $(i+1)}}') && ip -6 rule del from $LAN6 lookup main
+    post-up LAN6=$(ip -6 route get 2606:4700:d0::a29f:c001 2>/dev/null | awk '{for (i=0; i<NF; i++) if ($i=="src") {print $(i+1)}}') && ip -6 rule add from $LAN6 lookup main pref 1
+    pre-down LAN6=$(ip -6 route get 2606:4700:d0::a29f:c001 2>/dev/null | awk '{for (i=0; i<NF; i++) if ($i=="src") {print $(i+1)}}') && ip -6 rule del from $LAN6 lookup main pref 1
 EOF
 )
 
@@ -53,7 +53,7 @@ if [ -n "$out_iface" ] && grep -q "iface $out_iface inet[^6]" /etc/network/inter
         echo "已为接口 $out_iface 添加 IPv4 规则。"
         
         LAN4=$(ip route get 192.168.193.10 2>/dev/null | awk '{for (i=0; i<NF; i++) if ($i=="src") {print $(i+1)}}')
-        ip -4 rule add from $LAN4 lookup main
+        ip -4 rule add from $LAN4 lookup main pref 1
         echo "IPv4 规则已立即生效。"
     fi
 else
@@ -73,7 +73,7 @@ if [ -n "$out_iface6" ] && grep -q "iface $out_iface6 inet6" /etc/network/interf
         echo "已为接口 $out_iface6 添加 IPv6 规则。"
 
         LAN6=$(ip -6 route get 2606:4700:d0::a29f:c001 2>/dev/null | awk '{for (i=0; i<NF; i++) if ($i=="src") {print $(i+1)}}')
-        ip -6 rule add from $LAN6 lookup main
+        ip -6 rule add from $LAN6 lookup main pref 1
         echo "IPv6 规则已立即生效。"
     fi
 else
@@ -102,4 +102,5 @@ cat /etc/network/interfaces
 set +x
 echo
 set -x
-ip rule
+ip -4 rule
+ip -6 rule
