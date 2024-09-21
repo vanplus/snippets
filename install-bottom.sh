@@ -10,7 +10,7 @@ RELEASES_URL="https://github.com/$OWNER/$REPO/releases/latest"
 FILE_URL_PREFIX="https://github.com/$OWNER/$REPO/releases/latest/download/"
 
 # 确定最新的 release 页面
-latest_release_url=$(curl -sI $RELEASES_URL | grep -i location | awk '{print $2}' | tr -d '\r')
+latest_release_url=$(curl --http1.1 -sI $RELEASES_URL | grep -i location | awk '{print $2}' | tr -d '\r')
 
 # 提取版本号
 tag_name=$(echo $latest_release_url | grep -oP "tag/\K(.*)")
@@ -57,7 +57,7 @@ if [ "$1" != "--manual" ] && [ -n "$(check_dpkg_support)" ]; then
     # 构建文件下载 URL
     file_url="${FILE_URL_PREFIX}${file_name}"
     # 下载文件到当前目录
-    curl -sLJO "${file_url}"
+    curl --http1.1 -sLJO "${file_url}"
     dpkg -i "${file_name}"
     echo "dpkg 安装 btm 成功"
 
@@ -80,7 +80,7 @@ cd "$TMP_DIR"
 
 echo "已下载最新版本的 ${file_name} 文件，版本号：$tag_name"
 
-curl -sLJO "${file_url}"
+curl --http1.1 -sLJO "${file_url}"
 tar -xzf "${file_name}"
 cp btm "$MANUAL_INSTALL_DIR"
 echo "手动安装 btm 到 $MANUAL_INSTALL_DIR 成功"
